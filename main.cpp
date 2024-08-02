@@ -9,7 +9,7 @@
 #include <ctime>
 using namespace std;
 
-void setCursor(Coordinates coordinates);
+void setCursor(Coordinates _coordinates);
 void setupRockets(vector<Path*> _paths, int _startLine);
 void setupPaths(int _startLine, int _finishLine, vector<Path*> _paths);
 void showIntro(Coordinates _messagePos);
@@ -27,24 +27,16 @@ int main() {
     Rocket rocket4(int('$'));
     Rocket rocket5(int('%'));
     Rocket rocket6(int('&'));
-    vector<Path*> paths;
     Path path1(1, 10, 20, rocket1, "Path 1");
     Path path2(21, 30, 40, rocket2, "Path 2");
     Path path3(41, 50, 60, rocket3, "Path 3");
     Path path4(61, 70, 80, rocket4, "Path 4");
     Path path5(81, 90, 100, rocket5, "Path 5");
     Path path6(101, 110, 120, rocket6, "Path 6");
+    vector<Path*> paths = {&path1, &path2, &path3, &path4, &path5, &path6};
 
     // Necessary for randomized game outcomes
     srand(time(0));
-
-    // Populating the vector
-    paths.push_back(&path1);
-    paths.push_back(&path2);
-    paths.push_back(&path3);
-    paths.push_back(&path4);
-    paths.push_back(&path5);
-    paths.push_back(&path6);
 
     // Initial setup
     setupRockets(paths, startLine);
@@ -111,9 +103,9 @@ int main() {
 
 // Windows API Call, requires windows.h
 // https://learn.microsoft.com/en-us/windows/console/setconsolecursorcoordinates
-void setCursor(Coordinates coordinates) {
+void setCursor(Coordinates _coordinates) {
     HANDLE hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
-    COORD coord = { coordinates.col, coordinates.row };
+    COORD coord = { _coordinates.col, _coordinates.row };
     SetConsoleCursorPosition(hConsole, coord);
 }
 
