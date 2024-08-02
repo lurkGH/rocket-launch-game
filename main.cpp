@@ -1,12 +1,12 @@
-#include <iostream>
 #include <windows.h>
+#include <cstdlib>
+#include <iostream>
+#include <string>
+#include <vector>
+#include <ctime>
 #include "coordinates.h"
 #include "path.h"
 #include "rocket.h"
-#include <string>
-#include <vector>
-#include <cstdlib>
-#include <ctime>
 using namespace std;
 
 void setCursor(Coordinates _coordinates);
@@ -21,12 +21,12 @@ int main() {
     const int finishLine = 2;
     Coordinates messagePos(0, 0);
     Coordinates endCoordinates(0, startLine + 2);
-    Rocket rocket1(int('!'));
-    Rocket rocket2(int('@'));
-    Rocket rocket3(int('#'));
-    Rocket rocket4(int('$'));
-    Rocket rocket5(int('%'));
-    Rocket rocket6(int('&'));
+    Rocket rocket1(int('^'));
+    Rocket rocket2(int('^'));
+    Rocket rocket3(int('^'));
+    Rocket rocket4(int('^'));
+    Rocket rocket5(int('^'));
+    Rocket rocket6(int('^'));
     Path path1(1, 10, 20, rocket1, "Path 1");
     Path path2(21, 30, 40, rocket2, "Path 2");
     Path path3(41, 50, 60, rocket3, "Path 3");
@@ -49,12 +49,12 @@ int main() {
             Rocket& currRocket = *path->getRocket();
             // Stores coordinates
             Coordinates oldPos = currRocket.getCoordinates();
-            // Generates movement
+            // Generates upward movement
             int jump = rand() % 4 + 1;
             // Sets new coordinates
             Coordinates newPos = oldPos;
             newPos.row -= jump;
-            // Random chance movement
+            // Random chance for side movement
             int leftRight = rand() % 5;
             if (leftRight == 0) {
                 newPos.col += 2;
@@ -65,19 +65,26 @@ int main() {
             // Erases old rocket
             setCursor(oldPos);
             cout << " ";
-            // Check for if rocket is in same row as message
-            // (rocket disappears when message is displayed)
-            if (newPos.row == 0) {
-                newPos.row = 1;
+            // Sets rocket at finish line (not beyond it)
+            if (newPos.row <= finishLine) {
+                newPos.row = 2;
             }
             // Displays new rocket
             setCursor(newPos);
             cout << char(currRocket.getIcon());
             currRocket.setCoordinates(newPos);
+            // Generates rocket exhaust trail
+            Coordinates trailPos = newPos;
+            trailPos.row += 1;
+            // Check for trail outputting beyond finish line
+            if (trailPos.row > finishLine) {
+                setCursor(trailPos);
+                cout << ".";
+            }
             // Win condition
             if (newPos.row <= finishLine) {
-                clearMessageBar(messagePos);
                 // Displays win message
+                clearMessageBar(messagePos);
                 setCursor(messagePos);
                 cout << "Winner: " << path->getName() << "!";
                 gameOver = true;
@@ -85,8 +92,11 @@ int main() {
             }
             // Collision condition
             if (newPos.col <= path->getLBnd() + 1 || newPos.col >= path->getRBnd() - 1) {
-                clearMessageBar(messagePos);
+                // Show collision
+                setCursor(newPos);
+                cout << "X";
                 // Displays collision message
+                clearMessageBar(messagePos);
                 setCursor(messagePos);
                 cout << "Collision in " << path->getName() << "!";
                 gameOver = true;
