@@ -13,6 +13,10 @@ void setCursor(Coordinates _coordinates);
 void setupRockets(vector<Path*> _paths, int _startLine);
 void setupPaths(int _startLine, int _finishLine, vector<Path*> _paths);
 void showIntro(Coordinates _messagePos);
+Coordinates generateMovement(Coordinates _pos);
+void eraseRocket(Coordinates _pos);
+void displayRocket(Coordinates _pos);
+void displayTrail(Coordinates _pos);
 void clearMessageBar(Coordinates _messagePos);
 
 int main() {
@@ -21,12 +25,12 @@ int main() {
     const int finishLine = 2;
     Coordinates messagePos(0, 0);
     Coordinates endCoordinates(0, startLine + 2);
-    Rocket rocket1(int('^'));
-    Rocket rocket2(int('^'));
-    Rocket rocket3(int('^'));
-    Rocket rocket4(int('^'));
-    Rocket rocket5(int('^'));
-    Rocket rocket6(int('^'));
+    Rocket rocket1;
+    Rocket rocket2;
+    Rocket rocket3;
+    Rocket rocket4;
+    Rocket rocket5;
+    Rocket rocket6;
     Path path1(1, 10, 20, rocket1, "Path 1");
     Path path2(21, 30, 40, rocket2, "Path 2");
     Path path3(41, 50, 60, rocket3, "Path 3");
@@ -49,40 +53,26 @@ int main() {
             Rocket& currRocket = *path->getRocket();
             // Stores coordinates
             Coordinates oldPos = currRocket.getCoordinates();
-            // Generates upward movement
-            int jump = rand() % 4 + 1;
-            // Sets new coordinates
-            Coordinates newPos = oldPos;
-            newPos.row -= jump;
-            // Random chance for side movement
-            int leftRight = rand() % 5;
-            if (leftRight == 0) {
-                newPos.col += 2;
-            }
-            if (leftRight == 1) {
-                newPos.col -= 2;
-            }
-            // Erases old rocket
-            setCursor(oldPos);
-            cout << " ";
-            // Sets rocket at finish line (not beyond it)
+            // Generates and stores movement info
+            Coordinates newPos = generateMovement(oldPos);
+            // Ensures rocket is not displayed beyond finish line
             if (newPos.row <= finishLine) {
                 newPos.row = 2;
             }
-            // Displays new rocket
-            setCursor(newPos);
-            cout << char(currRocket.getIcon());
-            currRocket.setCoordinates(newPos);
-            // Generates rocket exhaust trail
-            Coordinates trailPos = newPos;
-            trailPos.row += 1;
-            // Check for trail outputting beyond finish line
-            if (trailPos.row > finishLine) {
-                setCursor(trailPos);
-                cout << ".";
+            eraseRocket(oldPos);
+            displayRocket(newPos);
+            // Ensures trail is displayed within start and finish line
+            // also prevents trail from overwriting side of rocket (_finishLine + 1)
+            if (newPos.row >= finishLine + 1 and newPos.row < startLine) {
+                displayTrail(newPos);
             }
+            // Overwrites old coordinates once used
+            currRocket.setCoordinates(newPos);
             // Win condition
             if (newPos.row <= finishLine) {
+                // Ensures finish line isn't overwritten by rocket
+                setCursor(newPos);
+                cout << "-^";
                 // Displays win message
                 clearMessageBar(messagePos);
                 setCursor(messagePos);
@@ -91,10 +81,10 @@ int main() {
                 break;
             }
             // Collision condition
-            if (newPos.col <= path->getLBnd() + 1 || newPos.col >= path->getRBnd() - 1) {
+            if (newPos.col <= path->getLBnd() + 2 || newPos.col >= path->getRBnd() - 2) {
                 // Show collision
                 setCursor(newPos);
-                cout << "X";
+                cout << " X";
                 // Displays collision message
                 clearMessageBar(messagePos);
                 setCursor(messagePos);
@@ -125,13 +115,13 @@ void setupRockets(vector<Path*> _paths, int _startLine) {
         Coordinates startCoordinates(path->getCntr(), _startLine); // Pos(col, row)
         setCursor(startCoordinates);
         path->getRocket()->setCoordinates(startCoordinates);
-        cout << char(path->getRocket()->getIcon());
+        displayRocket(startCoordinates);
     }
 }
 
 void setupPaths(int _startLine, int _finishLine, vector<Path*> _paths) {
     // Draws the paths/boundaries
-    for (int currRow = _startLine; currRow >= _finishLine; --currRow) {
+    for (int currRow = _startLine + 2; currRow >= _finishLine; --currRow) {
         for (int i = 0; i < _paths.size(); ++i) {
             Path* path = _paths[i];
             Coordinates pos(path->getLBnd(), currRow);
@@ -164,6 +154,49 @@ void showIntro(Coordinates _messagePos) {
     }
     cout << "Launch!";
 }
+
+Coordinates generateMovement(Coordinates _pos) {
+    // Generates upward movement
+    int jump = rand() % 4 + 1;
+    _pos.row -= jump;
+    // Random chance for side movement
+    int leftRight = rand() % 5;
+    if (leftRight == 0) {
+        _pos.col += 2;
+    }
+    if (leftRight == 1) {
+        _pos.col -= 2;
+    }
+    return _pos;
+}
+
+void eraseRocket(Coordinates _pos) {
+    for (int i = 0; i < 3; ++i) {
+        setCursor(_pos);
+        cout << "   \n";
+        _pos.row += 1;
+    }
+}
+
+void displayRocket(Coordinates _pos) {
+    // Displays new rocket
+    setCursor(_pos);
+    cout << " ^\n";
+    _pos.row += 1;
+    setCursor(_pos);
+    cout << "/|\\\n";
+    _pos.row += 1;
+    setCursor(_pos);
+    cout << "/ \\\n";
+}
+
+void displayTrail(Coordinates _pos) {
+    // Sets trail below rocket
+    _pos.row += 3;
+    setCursor(_pos);
+    cout << ".";
+}
+
 
 void clearMessageBar(Coordinates _messagePos) {
     setCursor(_messagePos);
