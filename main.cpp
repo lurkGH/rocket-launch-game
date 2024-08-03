@@ -14,7 +14,10 @@ void setupWindow();
 void setupRockets(vector<Path*> _paths, int _startLine);
 void setupPaths(int _startLine, int _finishLine, vector<Path*> _paths);
 void setupPathNames(int _startLine, vector<Path*> _paths);
+void showTitle();
 void showIntro(Coordinates _messagePos);
+Coordinates centerMessage(Coordinates pos, string message);
+void displayMessage(Coordinates pos, string message);
 Coordinates generateMovement(Coordinates _pos);
 void eraseRocket(Coordinates _pos);
 void displayRocket(Coordinates _pos);
@@ -25,6 +28,7 @@ int main() {
     bool gameOver = false;
     const int startLine = 30;
     const int finishLine = 2;
+    string endMessage;
     Coordinates messagePos(1, 1);
     Coordinates endCoordinates(0, startLine + 4);
     Rocket rocket1;
@@ -49,6 +53,7 @@ int main() {
     setupRockets(paths, startLine);
     setupPaths(startLine, finishLine, paths);
     setupPathNames(startLine, paths);
+    showTitle();
     showIntro(messagePos);
 
     // Main game loop
@@ -79,8 +84,9 @@ int main() {
                 cout << "-^";
                 // Displays win message
                 clearMessageBar(messagePos);
-                setCursor(messagePos);
-                cout << " Winner: " << path->getName() << "!";
+                endMessage = "Winner: " + path->getName() + "!";
+                messagePos = centerMessage(messagePos, endMessage);
+                displayMessage(messagePos, endMessage);
                 gameOver = true;
                 break;
             }
@@ -91,8 +97,9 @@ int main() {
                 cout << " X";
                 // Displays collision message
                 clearMessageBar(messagePos);
-                setCursor(messagePos);
-                cout << " Collision in " << path->getName() << "!";
+                endMessage = path->getName() + "'s rocket crashed!";
+                messagePos = centerMessage(messagePos, endMessage);
+                displayMessage(messagePos, endMessage);
                 gameOver = true;
                 break;
             }
@@ -189,23 +196,50 @@ void setupPathNames(int _startLine, vector<Path*> _paths) {
     }
 }
 
-void showIntro(Coordinates _messagePos) {
-    // Display game title
+void showTitle() {
+    // Displays game title
     Coordinates pos(61, 0);
     string gameName = "_-Rocket Launch Game-_";
-    pos.col -= gameName.length() / 2;
-    if ((gameName.length() % 2) == 0) {
-        pos.col += 1;
-    }
+    pos = centerMessage(pos, gameName);
     setCursor(pos);
     cout << gameName;
-    // Display launch message
-    setCursor(_messagePos);
-    for (int i = 3; i >= 1; --i) {
-        cout << i << "... ";
-        Sleep(1000);
+}
+
+void showIntro(Coordinates _messagePos) {
+    // Displays launch message
+    string message;
+    for (int i = 3; i >= 0; --i) {
+        clearMessageBar(_messagePos);
+        // Appends to message depending on countdown number
+        if (i > 0) {
+            message += to_string(i) + "... ";
+        }
+        else if (i == 0) {
+            message += "Launch!";
+        }
+        // Centers message
+        _messagePos = centerMessage(_messagePos, message);
+        setCursor(_messagePos);
+        cout << message;
+        // Sets delay between countdown, skipped at 0
+        if (i != 0) {
+            Sleep(1000);
+        }
     }
-    cout << "Launch!";
+}
+
+Coordinates centerMessage(Coordinates pos, string message) {
+    pos.col = (61 - (message.length() / 2));
+    // Fixes oddity in spacing when string is even-numbered
+    if ((message.length() % 2) == 0) {
+        pos.col += 1;
+    }
+    return pos;
+}
+
+void displayMessage(Coordinates pos, string message) {
+    setCursor(pos);
+    cout << message;
 }
 
 Coordinates generateMovement(Coordinates _pos) {
