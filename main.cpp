@@ -25,7 +25,7 @@ int main() {
     bool gameOver = false;
     const int startLine = 30;
     const int finishLine = 2;
-    Coordinates messagePos(0, 0);
+    Coordinates messagePos(1, 1);
     Coordinates endCoordinates(0, startLine + 4);
     Rocket rocket1;
     Rocket rocket2;
@@ -132,7 +132,7 @@ void setupRockets(vector<Path*> _paths, int _startLine) {
 }
 
 void setupPaths(int _startLine, int _finishLine, vector<Path*> _paths) {
-    for (int currRow = _startLine; currRow >= _finishLine; --currRow) {
+    for (int currRow = _startLine + 4; currRow >= _finishLine; --currRow) {
         // Draws the paths/boundaries
         for (int i = 0; i < _paths.size(); ++i) {
             Path* path = _paths[i];
@@ -154,13 +154,20 @@ void setupPaths(int _startLine, int _finishLine, vector<Path*> _paths) {
                     cout << "-";
                 }
             }
-            // For start line
+            // For upper start line
             if (currRow == _startLine) {
                 for (int k = 0; k < 122; ++k) {
                     pos.col = k;
                     setCursor(pos);
                     cout << "-";
-
+                }
+            }
+            // For lower start line
+            if (currRow == _startLine + 4) {
+                for (int m = 0; m < 122; ++m) {
+                    pos.col = m;
+                    setCursor(pos);
+                    cout << "-";
                 }
             }
         }
@@ -174,7 +181,7 @@ void setupPathNames(int _startLine, vector<Path*> _paths) {
         Coordinates pos(path->getCntr(), _startLine + 2);
         // Centers the pathname
         pos.col -= pathName.length() / 2;
-        if ((pathName.length() % 2) == 0 ) {
+        if ((pathName.length() % 2) == 0) {
             pos.col += 1;
         }
         setCursor(pos);
@@ -183,6 +190,16 @@ void setupPathNames(int _startLine, vector<Path*> _paths) {
 }
 
 void showIntro(Coordinates _messagePos) {
+    // Display game title
+    Coordinates pos(61, 0);
+    string gameName = "_-Rocket Launch Game-_";
+    pos.col -= gameName.length() / 2;
+    if ((gameName.length() % 2) == 0) {
+        pos.col += 1;
+    }
+    setCursor(pos);
+    cout << gameName;
+    // Display launch message
     setCursor(_messagePos);
     for (int i = 3; i >= 1; --i) {
         cout << i << "... ";
@@ -235,6 +252,9 @@ void displayTrail(Coordinates _pos) {
 
 
 void clearMessageBar(Coordinates _messagePos) {
-    setCursor(_messagePos);
-    cout << "                           ";
+    for (int i = 0; i < 122; ++i) {
+        _messagePos.col = i;
+        setCursor(_messagePos);
+        cout << " ";
+    }
 }
