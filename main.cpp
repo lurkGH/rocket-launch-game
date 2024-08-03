@@ -10,8 +10,10 @@
 using namespace std;
 
 void setCursor(Coordinates _coordinates);
+void setupWindow();
 void setupRockets(vector<Path*> _paths, int _startLine);
 void setupPaths(int _startLine, int _finishLine, vector<Path*> _paths);
+void setupPathNames(int _startLine, vector<Path*> _paths);
 void showIntro(Coordinates _messagePos);
 Coordinates generateMovement(Coordinates _pos);
 void eraseRocket(Coordinates _pos);
@@ -24,27 +26,29 @@ int main() {
     const int startLine = 30;
     const int finishLine = 2;
     Coordinates messagePos(0, 0);
-    Coordinates endCoordinates(0, startLine + 2);
+    Coordinates endCoordinates(0, startLine + 4);
     Rocket rocket1;
     Rocket rocket2;
     Rocket rocket3;
     Rocket rocket4;
     Rocket rocket5;
     Rocket rocket6;
-    Path path1(1, 10, 20, rocket1, "Path 1");
-    Path path2(21, 30, 40, rocket2, "Path 2");
-    Path path3(41, 50, 60, rocket3, "Path 3");
-    Path path4(61, 70, 80, rocket4, "Path 4");
-    Path path5(81, 90, 100, rocket5, "Path 5");
-    Path path6(101, 110, 120, rocket6, "Path 6");
+    Path path1(1, 10, 20, rocket1, "USA");
+    Path path2(21, 30, 40, rocket2, "UK");
+    Path path3(41, 50, 60, rocket3, "China");
+    Path path4(61, 70, 80, rocket4, "India");
+    Path path5(81, 90, 100, rocket5, "Japan");
+    Path path6(101, 110, 120, rocket6, "Russia");
     vector<Path*> paths = {&path1, &path2, &path3, &path4, &path5, &path6};
 
     // Necessary for randomized game outcomes
     srand(time(0));
 
     // Initial setup
+    setupWindow();
     setupRockets(paths, startLine);
     setupPaths(startLine, finishLine, paths);
+    setupPathNames(startLine, paths);
     showIntro(messagePos);
 
     // Main game loop
@@ -63,7 +67,7 @@ int main() {
             displayRocket(newPos);
             // Ensures trail is displayed within start and finish line
             // also prevents trail from overwriting side of rocket (_finishLine + 1)
-            if (newPos.row >= finishLine + 1 and newPos.row < startLine) {
+            if (newPos.row >= finishLine + 1 and newPos.row < startLine - 3) {
                 displayTrail(newPos);
             }
             // Overwrites old coordinates once used
@@ -76,7 +80,7 @@ int main() {
                 // Displays win message
                 clearMessageBar(messagePos);
                 setCursor(messagePos);
-                cout << "Winner: " << path->getName() << "!";
+                cout << " Winner: " << path->getName() << "!";
                 gameOver = true;
                 break;
             }
@@ -88,12 +92,12 @@ int main() {
                 // Displays collision message
                 clearMessageBar(messagePos);
                 setCursor(messagePos);
-                cout << "Collision in " << path->getName() << "!";
+                cout << " Collision in " << path->getName() << "!";
                 gameOver = true;
                 break;
             }
             // Sets speed of rocket movement
-            Sleep(100);
+            Sleep(15);
         }
     }
     // Prints file information below game
@@ -102,17 +106,25 @@ int main() {
 }
 
 // Windows API Call, requires windows.h
-// https://learn.microsoft.com/en-us/windows/console/setconsolecursorcoordinates
+// Source: https://learn.microsoft.com/en-us/windows/console/setconsolecursorposition
 void setCursor(Coordinates _coordinates) {
     HANDLE hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
     COORD coord = { _coordinates.col, _coordinates.row };
     SetConsoleCursorPosition(hConsole, coord);
 }
 
+// Source: https://cplusplus.com/forum/beginner/1481/
+void setupWindow() {
+    HWND console = GetConsoleWindow();
+    RECT r;
+    GetWindowRect(console, &r);
+    MoveWindow(console, r.left, r.top, 995, 690, TRUE);
+}
+
 void setupRockets(vector<Path*> _paths, int _startLine) {
     // Draws the rockets in their initial coordinatess
     for (Path* path : _paths) {
-        Coordinates startCoordinates(path->getCntr(), _startLine); // Pos(col, row)
+        Coordinates startCoordinates(path->getCntr(), _startLine - 3); // Pos(col, row)
         setCursor(startCoordinates);
         path->getRocket()->setCoordinates(startCoordinates);
         displayRocket(startCoordinates);
@@ -120,8 +132,8 @@ void setupRockets(vector<Path*> _paths, int _startLine) {
 }
 
 void setupPaths(int _startLine, int _finishLine, vector<Path*> _paths) {
-    // Draws the paths/boundaries
-    for (int currRow = _startLine + 2; currRow >= _finishLine; --currRow) {
+    for (int currRow = _startLine; currRow >= _finishLine; --currRow) {
+        // Draws the paths/boundaries
         for (int i = 0; i < _paths.size(); ++i) {
             Path* path = _paths[i];
             Coordinates pos(path->getLBnd(), currRow);
@@ -142,7 +154,31 @@ void setupPaths(int _startLine, int _finishLine, vector<Path*> _paths) {
                     cout << "-";
                 }
             }
+            // For start line
+            if (currRow == _startLine) {
+                for (int k = 0; k < 122; ++k) {
+                    pos.col = k;
+                    setCursor(pos);
+                    cout << "-";
+
+                }
+            }
         }
+    }
+}
+
+void setupPathNames(int _startLine, vector<Path*> _paths) {
+    for (int i = 0; i < _paths.size(); ++i) {
+        Path* path = _paths[i];
+        string pathName = path->getName();
+        Coordinates pos(path->getCntr(), _startLine + 2);
+        // Centers the pathname
+        pos.col -= pathName.length() / 2;
+        if ((pathName.length() % 2) == 0 ) {
+            pos.col += 1;
+        }
+        setCursor(pos);
+        cout << pathName;
     }
 }
 
@@ -157,15 +193,15 @@ void showIntro(Coordinates _messagePos) {
 
 Coordinates generateMovement(Coordinates _pos) {
     // Generates upward movement
-    int jump = rand() % 4 + 1;
+    int jump = rand() % 3;
     _pos.row -= jump;
     // Random chance for side movement
-    int leftRight = rand() % 5;
+    int leftRight = rand() % 8;
     if (leftRight == 0) {
-        _pos.col += 2;
+        _pos.col += 1;
     }
     if (leftRight == 1) {
-        _pos.col -= 2;
+        _pos.col -= 1;
     }
     return _pos;
 }
