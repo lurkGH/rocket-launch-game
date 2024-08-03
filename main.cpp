@@ -43,7 +43,7 @@ int main() {
     Path path4(61, 70, 80, rocket4, "India");
     Path path5(81, 90, 100, rocket5, "Japan");
     Path path6(101, 110, 120, rocket6, "Russia");
-    vector<Path*> paths = {&path1, &path2, &path3, &path4, &path5, &path6};
+    vector<Path*> paths = { &path1, &path2, &path3, &path4, &path5, &path6 };
 
     // Necessary for randomized game outcomes
     srand(time(0));
