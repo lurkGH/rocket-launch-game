@@ -289,7 +289,7 @@ void displayTrail(Coordinates _pos) {
     // Sets trail below rocket
     _pos.row += 3;
     setCursor(_pos);
-    cout << ".";
+    cout << " .";
 }
 
 
