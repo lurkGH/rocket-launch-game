@@ -10,7 +10,7 @@
 using namespace std;
 
 void setCursor(Coordinates _coordinates);
-void setupWindow();
+void setupWindow(int width, int height);
 void setupRockets(vector<Path*> _paths, int _startLine);
 void setupPaths(int _startLine, int _finishLine, vector<Path*> _paths);
 void setupPathNames(int _startLine, vector<Path*> _paths);
@@ -25,12 +25,16 @@ void displayTrail(Coordinates _pos);
 void clearMessageBar(Coordinates _messagePos);
 
 int main() {
-    bool gameOver = false;
+    // Settings
+    const int consoleWidth = 122;
+    const int consoleHeight = 42;
     const int startLine = 30;
-    const int finishLine = 2;
-    string endMessage;
+    const int finishLine = 3;
     Coordinates messagePos(1, 1);
     Coordinates endCoordinates(0, startLine + 4);
+    // Game Variables/Instances
+    bool gameOver = false;
+    string endMessage;
     Rocket rocket1;
     Rocket rocket2;
     Rocket rocket3;
@@ -49,7 +53,7 @@ int main() {
     srand(time(0));
 
     // Initial setup
-    setupWindow();
+    setupWindow(consoleWidth, consoleHeight);
     setupRockets(paths, startLine);
     setupPaths(startLine, finishLine, paths);
     setupPathNames(startLine, paths);
@@ -66,7 +70,7 @@ int main() {
             Coordinates newPos = generateMovement(oldPos);
             // Ensures rocket is not displayed beyond finish line
             if (newPos.row <= finishLine) {
-                newPos.row = 2;
+                newPos.row = finishLine;
             }
             eraseRocket(oldPos);
             displayRocket(newPos);
@@ -121,11 +125,15 @@ void setCursor(Coordinates _coordinates) {
 }
 
 // Source: https://cplusplus.com/forum/beginner/1481/
-void setupWindow() {
+void setupWindow(int width, int height) {
+    // Converts roughly to pixels, using static_cast for precision
+    // int is a required parameter for MoveWindow()
+    width = (static_cast<float>(width) * 8.18852);
+    height = (static_cast<float>(height) * 17.31707);
     HWND console = GetConsoleWindow();
     RECT r;
     GetWindowRect(console, &r);
-    MoveWindow(console, r.left, r.top, 995, 690, TRUE);
+    MoveWindow(console, r.left, r.top, width, height, TRUE);
 }
 
 void setupRockets(vector<Path*> _paths, int _startLine) {
@@ -208,7 +216,7 @@ void showTitle() {
 void showIntro(Coordinates _messagePos) {
     // Displays launch message
     string message;
-    for (int i = 3; i >= 0; --i) {
+    for (int i = 5; i >= 0; --i) {
         clearMessageBar(_messagePos);
         // Appends to message depending on countdown number
         if (i > 0) {
