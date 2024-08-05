@@ -20,7 +20,7 @@ Coordinates centerMessage(Coordinates pos, string message);
 void displayMessage(Coordinates pos, string message);
 Coordinates generateMovement(Coordinates _pos);
 void eraseRocket(Coordinates _pos);
-void displayRocket(Coordinates _pos);
+void displayRocket(Path* path, Coordinates pos);
 void displayTrail(Coordinates _pos);
 void clearMessageBar(Coordinates _messagePos);
 
@@ -73,7 +73,7 @@ int main() {
                 newPos.row = finishLine;
             }
             eraseRocket(oldPos);
-            displayRocket(newPos);
+            displayRocket(path, newPos);
             // Ensures trail is displayed within start and finish line
             // also prevents trail from overwriting side of rocket (_finishLine + 1)
             if (newPos.row >= finishLine + 1 and newPos.row < startLine - 3) {
@@ -140,9 +140,10 @@ void setupRockets(vector<Path*> _paths, int _startLine) {
     // Draws the rockets in their initial coordinatess
     for (Path* path : _paths) {
         Coordinates startCoordinates(path->getCntr(), _startLine - 3); // Pos(col, row)
+        Rocket& currRocket = *path->getRocket();
         setCursor(startCoordinates);
         path->getRocket()->setCoordinates(startCoordinates);
-        displayRocket(startCoordinates);
+        displayRocket(path, startCoordinates);
     }
 }
 
@@ -255,7 +256,7 @@ Coordinates generateMovement(Coordinates _pos) {
     int jump = rand() % 3;
     _pos.row -= jump;
     // Random chance for side movement
-    int leftRight = rand() % 8;
+    int leftRight = rand() % 6;
     if (leftRight == 0) {
         _pos.col += 1;
     }
@@ -273,16 +274,14 @@ void eraseRocket(Coordinates _pos) {
     }
 }
 
-void displayRocket(Coordinates _pos) {
-    // Displays new rocket
-    setCursor(_pos);
-    cout << " ^\n";
-    _pos.row += 1;
-    setCursor(_pos);
-    cout << "/|\\\n";
-    _pos.row += 1;
-    setCursor(_pos);
-    cout << "/ \\\n";
+void displayRocket(Path* path, Coordinates pos) {
+    Rocket& rocket = *path->getRocket();
+    vector<string> icon = rocket.getIcon();
+    for (int i = 0; i < icon.size(); ++i) {
+        setCursor(pos);
+        cout << icon[i];
+        pos.row++;
+    }
 }
 
 void displayTrail(Coordinates _pos) {
