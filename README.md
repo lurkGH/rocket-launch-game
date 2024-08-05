@@ -9,4 +9,4 @@ and the game ends when one of the rockets either reaches the finish line at the 
 
 <p>This is a snippet of how the program currently looks when run:</p>
 
-<img src="preview-image.png">
+<img src="preview-image.gif">

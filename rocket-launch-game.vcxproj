@@ -137,6 +137,7 @@
     <ClCompile Include="rocket.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <Image Include="preview-image.gif" />
     <Image Include="preview-image.png" />
   </ItemGroup>
   <ItemGroup>
