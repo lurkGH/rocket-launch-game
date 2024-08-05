@@ -7,6 +7,8 @@ and the game ends when one of the rockets either reaches the finish line at the 
 
 <h2>Preview</h2>
 
-<p>This is a snippet of how the program currently looks when run:</p>
+<p>This is how the program currently looks when run:</p>
 
-<img src="preview-image.gif">
+<p align="center">
+  <img src="preview-image.gif">
+</p>
