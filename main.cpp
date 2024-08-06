@@ -10,17 +10,17 @@
 using namespace std;
 
 void setCursor(Coordinates _coordinates);
-void setupWindow(int width, int height);
+void setupWindow(int _width, int _height);
 void setupRockets(vector<Path*> _paths, int _startLine);
 void setupPaths(int _startLine, int _finishLine, vector<Path*> _paths);
 void setupPathNames(int _startLine, vector<Path*> _paths);
 void showTitle();
 void showIntro(Coordinates _messagePos);
-Coordinates centerMessage(Coordinates pos, string message);
-void displayMessage(Coordinates pos, string message);
+Coordinates centerMessage(Coordinates _pos, string _message);
+void displayMessage(Coordinates _pos, string _message);
 Coordinates generateMovement(Coordinates _pos);
 void eraseRocket(Coordinates _pos);
-void displayRocket(Path* path, Coordinates pos);
+void displayRocket(Rocket& _rocket);
 void displayTrail(Coordinates _pos);
 void clearMessageBar(Coordinates _messagePos);
 
@@ -72,15 +72,16 @@ int main() {
             if (newPos.row <= finishLine) {
                 newPos.row = finishLine;
             }
+            // Updates coordinates
+            currRocket.setCoordinates(newPos);
+            // Updates rocket display
             eraseRocket(oldPos);
-            displayRocket(path, newPos);
+            displayRocket(currRocket);
             // Ensures trail is displayed within start and finish line
             // also prevents trail from overwriting side of rocket (_finishLine + 1)
             if (newPos.row >= finishLine + 1 and newPos.row < startLine - 3) {
                 displayTrail(newPos);
             }
-            // Overwrites old coordinates once used
-            currRocket.setCoordinates(newPos);
             // Win condition
             if (newPos.row <= finishLine) {
                 // Ensures finish line isn't overwritten by rocket
@@ -125,15 +126,15 @@ void setCursor(Coordinates _coordinates) {
 }
 
 // Source: https://cplusplus.com/forum/beginner/1481/
-void setupWindow(int width, int height) {
+void setupWindow(int _width, int _height) {
     // Converts roughly to pixels, using static_cast for precision
     // int is a required parameter for MoveWindow()
-    width = (static_cast<float>(width) * 8.18852);
-    height = (static_cast<float>(height) * 17.31707);
+    _width = (static_cast<float>(_width) * 8.18852);
+    _height = (static_cast<float>(_height) * 17.31707);
     HWND console = GetConsoleWindow();
     RECT r;
     GetWindowRect(console, &r);
-    MoveWindow(console, r.left, r.top, width, height, TRUE);
+    MoveWindow(console, r.left, r.top, _width, _height, TRUE);
 }
 
 void setupRockets(vector<Path*> _paths, int _startLine) {
@@ -143,7 +144,7 @@ void setupRockets(vector<Path*> _paths, int _startLine) {
         Rocket& currRocket = *path->getRocket();
         setCursor(startCoordinates);
         path->getRocket()->setCoordinates(startCoordinates);
-        displayRocket(path, startCoordinates);
+        displayRocket(currRocket);
     }
 }
 
@@ -197,9 +198,7 @@ void setupPathNames(int _startLine, vector<Path*> _paths) {
         Coordinates pos(path->getCntr(), _startLine + 2);
         // Centers the pathname
         pos.col -= pathName.length() / 2;
-        if ((pathName.length() % 2) == 0) {
-            pos.col += 1;
-        }
+        pos.col++;
         setCursor(pos);
         cout << pathName;
     }
@@ -237,18 +236,18 @@ void showIntro(Coordinates _messagePos) {
     }
 }
 
-Coordinates centerMessage(Coordinates pos, string message) {
-    pos.col = (61 - (message.length() / 2));
+Coordinates centerMessage(Coordinates _pos, string _message) {
+    _pos.col = (61 - (_message.length() / 2));
     // Fixes oddity in spacing when string is even-numbered
-    if ((message.length() % 2) == 0) {
-        pos.col += 1;
+    if ((_message.length() % 2) == 0) {
+        _pos.col += 1;
     }
-    return pos;
+    return _pos;
 }
 
-void displayMessage(Coordinates pos, string message) {
-    setCursor(pos);
-    cout << message;
+void displayMessage(Coordinates _pos, string _message) {
+    setCursor(_pos);
+    cout << _message;
 }
 
 Coordinates generateMovement(Coordinates _pos) {
@@ -256,7 +255,7 @@ Coordinates generateMovement(Coordinates _pos) {
     int jump = rand() % 3;
     _pos.row -= jump;
     // Random chance for side movement
-    int leftRight = rand() % 6;
+    int leftRight = rand() % 5;
     if (leftRight == 0) {
         _pos.col += 1;
     }
@@ -274,9 +273,9 @@ void eraseRocket(Coordinates _pos) {
     }
 }
 
-void displayRocket(Path* path, Coordinates pos) {
-    Rocket& rocket = *path->getRocket();
+void displayRocket(Rocket& rocket) {
     vector<string> icon = rocket.getIcon();
+    Coordinates pos = rocket.getCoordinates();
     for (int i = 0; i < icon.size(); ++i) {
         setCursor(pos);
         cout << icon[i];
